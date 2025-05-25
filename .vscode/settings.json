@@ -1,0 +1,31 @@
+{
+  "cSpell.language": "en,de-de",
+  "editor.unicodeHighlight.allowedCharacters": {
+    "️": true
+  },
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+  "workbench.editor.labelFormat": "short",
+
+  "editor.formatOnSave": true,
+
+  "explorer.fileNesting.enabled": true,
+  "explorer.fileNesting.expand": false,
+  "explorer.autoReveal": false,
+  "explorer.fileNesting.patterns": {
+    "go.mod": "go.sum,.editorconfig",
+    "*.go": "$(capture)_test.go",
+    "Taskfile.yml": "Dockerfile",
+    "README.md": "LICENSE"
+  },
+
+  "cSpell.ignorePaths": ["go.mod", "go.sum"],
+
+  "biome.enabled": false,
+  "[json][jsonc][html][javascript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[go][go.mod]": {
+    "editor.defaultFormatter": "golang.go"
+  }
+}
