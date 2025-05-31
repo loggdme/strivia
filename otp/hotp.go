@@ -55,7 +55,7 @@ func GenerateCodeHOTP(secret string, counter uint64, opts HOTPOpts) (passcode st
 
 	secretBytes, err := base32.StdEncoding.DecodeString(secret)
 	if err != nil {
-		return "", ErrValidateSecretInvalidBase32
+		return "", ErrValidateOtpSecretInvalidBase32
 	}
 
 	buf := make([]byte, 8)
@@ -84,7 +84,7 @@ func VerifyHOTP(passcode string, counter uint64, secret string, opts HOTPOpts) (
 	passcode = strings.TrimSpace(passcode)
 
 	if len(passcode) != opts.Digits.Length() {
-		return false, ErrValidateInputInvalidLength
+		return false, ErrValidateOtpInputInvalidLength
 	}
 
 	otpStr, err := GenerateCodeHOTP(secret, counter, opts)
@@ -102,11 +102,11 @@ func VerifyHOTP(passcode string, counter uint64, secret string, opts HOTPOpts) (
 // GenerateKeyHOTP creates a new HOTP Key.
 func GenerateKeyHOTP(opts GenerateKeyOptsHOTP) (*Key, error) {
 	if opts.Issuer == "" {
-		return nil, ErrGenerateMissingIssuer
+		return nil, ErrGenerateOtpMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, ErrGenerateMissingAccountName
+		return nil, ErrGenerateOtpMissingAccountName
 	}
 
 	if opts.SecretSize == 0 {

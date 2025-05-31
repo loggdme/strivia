@@ -67,6 +67,10 @@ func GenerateCodeTOTP(secret string, t time.Time, opts *TOTPOpts) (passcode stri
 
 // VerifyTOTP validates a TOTP given a user specified time and custom options.
 func VerifyTOTP(passcode string, secret string, t time.Time, opts *TOTPOpts) (bool, error) {
+	if opts.Period == 0 {
+		opts.Period = DefaultParamsTOTP.Period
+	}
+
 	counters := []uint64{}
 	counter := int64(math.Floor(float64(t.Unix()) / float64(opts.Period)))
 
@@ -97,11 +101,11 @@ func VerifyTOTP(passcode string, secret string, t time.Time, opts *TOTPOpts) (bo
 // GenerateKeyTOTP creates a new HOTP Key.
 func GenerateKeyTOTP(opts GenerateKeyOptsTOTP) (*Key, error) {
 	if opts.Issuer == "" {
-		return nil, ErrGenerateMissingIssuer
+		return nil, ErrGenerateOtpMissingIssuer
 	}
 
 	if opts.AccountName == "" {
-		return nil, ErrGenerateMissingAccountName
+		return nil, ErrGenerateOtpMissingAccountName
 	}
 
 	if opts.Period == 0 {

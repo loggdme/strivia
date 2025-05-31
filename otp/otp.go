@@ -34,10 +34,10 @@ const (
 )
 
 var (
-	ErrValidateSecretInvalidBase32 = errors.New("otp: decoding of secret as base32 failed.")
-	ErrValidateInputInvalidLength  = errors.New("otp: input length unexpected")
-	ErrGenerateMissingIssuer       = errors.New("otp: issuer must be set")
-	ErrGenerateMissingAccountName  = errors.New("otp: account_name must be set")
+	ErrValidateOtpSecretInvalidBase32 = errors.New("otp: decoding of secret as base32 failed.")
+	ErrValidateOtpInputInvalidLength  = errors.New("otp: input length unexpected")
+	ErrGenerateOtpMissingIssuer       = errors.New("otp: issuer must be set")
+	ErrGenerateOtpMissingAccountName  = errors.New("otp: account_name must be set")
 )
 
 // Hash returns a hash.Hash for the given Algorithm.
