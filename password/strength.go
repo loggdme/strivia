@@ -1,4 +1,4 @@
-package strivia
+package password
 
 import (
 	"math"

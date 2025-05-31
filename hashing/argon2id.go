@@ -1,8 +1,7 @@
-package strivia
+package hashing
 
 import (
 	"bytes"
-	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
 	"errors"
@@ -10,6 +9,7 @@ import (
 	"io"
 	"strings"
 
+	strivia_random "github.com/loggdme/strivia/random"
 	"golang.org/x/crypto/argon2"
 )
 
@@ -104,8 +104,7 @@ type Params struct {
 //
 // $argon2id$v=19$m=65536,t=3,p=2$c29tZXNhbHQ$RdescudvJCsgt3ub+b+dWRWJTmaaJObG
 func CreateHash[T interface{ string | []byte }](password T, params *Params) (hash string) {
-	salt := make([]byte, params.SaltLength)
-	rand.Read(salt)
+	salt := strivia_random.SecureRandomBytes(params.SaltLength)
 
 	key := argon2.IDKey([]byte(password), salt, params.Iterations, params.Memory, params.Parallelism, params.KeyLength)
 

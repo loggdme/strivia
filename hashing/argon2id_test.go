@@ -1,4 +1,4 @@
-package strivia
+package hashing
 
 import (
 	"crypto/rand"
