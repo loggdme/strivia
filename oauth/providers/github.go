@@ -37,8 +37,8 @@ func (p *GitHubProvider) CreateAuthorizationURL(state string, scopes []string) s
 //
 // With this code you can fetch the GitHub API from the user's perspective. Read more about it here:
 // https://docs.github.com/en/rest/users/emails?apiVersion=2022-11-28
-func (p *GitHubProvider) ValidateAuthorizationCode(code string) (*string, error) {
-	return p.Client.ValidateAuthorizationCode("https://github.com/login/oauth/access_token", code)
+func (p *GitHubProvider) ValidateAuthorizationCode(code string) (*oauth.OAuth2Tokens, error) {
+	return p.Client.ValidateAuthorizationCode("https://github.com/login/oauth/access_token", code, nil)
 }
 
 // GetUser retrieves the authenticated user's information from GitHub using the provided access token.
@@ -58,10 +58,8 @@ func (p *GitHubProvider) GetUser(accessToken string) (*oauth.OAuth2User, error) 
 	}
 
 	return &oauth.OAuth2User{
-		ID:        strconv.Itoa(int(githubUserResponse.ID)),
-		Username:  githubUserResponse.Login,
-		Email:     email,
-		AvatarURL: githubUserResponse.AvatarURL,
+		ID:    strconv.Itoa(int(githubUserResponse.ID)),
+		Email: email,
 	}, nil
 }
 
