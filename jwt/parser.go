@@ -1,8 +1,9 @@
 package jwt
 
 import (
-	"encoding/json"
 	"strings"
+
+	"github.com/goccy/go-json"
 )
 
 func UnsecureDecodeToken[Claims any](tokenString string) (*Token[Claims], error) {

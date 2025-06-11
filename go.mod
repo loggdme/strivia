@@ -3,6 +3,7 @@ module github.com/loggdme/strivia
 go 1.24.3
 
 require (
+	github.com/goccy/go-json v0.10.5
 	github.com/stretchr/testify v1.10.0
 	golang.org/x/crypto v0.38.0
 )

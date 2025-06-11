@@ -6,6 +6,25 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// ====== Benchmarks ======
+
+func BenchmarkUnsecureDecodeToken(b *testing.B) {
+	type CustomClaims struct {
+		Email string `json:"email"`
+		RegisteredClaims
+	}
+
+	token := "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJfbmV3QGxvZ2dkLm1lIiwiaXNzIjoibG9nZ2QubWUiLCJzdWIiOiJ1bmlxdWUtdXNlci1pZCIsImF1ZCI6WyJsb2dnZC5tZSJdLCJleHAiOjE3NDk3NzA0OTUsIm5iZiI6MTc0OTY4NDA5NSwiaWF0IjoxNzQ5Njg0MDk1LCJqdGkiOiJBQlhHSEhLTlVUR0ZGREo0MzdESVQ3V1VINkVIV1JRV1BKWk1ISUNLUEdOVTRENE00TlRRIn0.1G7vmW5ZEKrjem-TJxOuRLDmueaNZ18en4ybpPL76C5CjlTv7t84bMj-SQuBiCahiP0AqB8yWtQbDS2u3Z8RBQ"
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for b.Loop() {
+		UnsecureDecodeToken[CustomClaims](token)
+	}
+}
+
+// ====== Tests ======
+
 /* SplitToken */
 
 func TestSplitToken_NormalInput(t *testing.T) {

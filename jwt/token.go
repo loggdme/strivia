@@ -2,7 +2,8 @@ package jwt
 
 import (
 	"crypto/ed25519"
-	"encoding/json"
+
+	"github.com/goccy/go-json"
 )
 
 // Token represents a JWT Token.  Different fields will be used depending on
