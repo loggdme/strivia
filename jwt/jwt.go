@@ -67,19 +67,6 @@ func (date *NumericDate) UnmarshalJSON(b []byte) (err error) {
 	return nil
 }
 
-func decodeSegment(segment string) ([]byte, error) {
-	if segment == "" {
-		return nil, ErrTokenMalformed
-	}
-
-	data, err := base64.RawURLEncoding.DecodeString(segment)
-	if err != nil {
-		return nil, fmt.Errorf("jwt: failed to decode segment: %w", err)
-	}
-
-	return data, nil
-}
-
 func _EncodeSegment(seg []byte) string {
 	return base64.RawURLEncoding.EncodeToString(seg)
 }

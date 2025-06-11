@@ -15,38 +15,26 @@ var (
 	ErrNotEdPublicKey      = errors.New("jwt-ed25519: key is not a valid Ed25519 public key")
 )
 
-func VerifyEd25519(signingString string, sig []byte, key any) error {
-	var ed25519Key ed25519.PublicKey
-	var ok bool
+type PrivateKey ed25519.PrivateKey
 
-	if ed25519Key, ok = key.(ed25519.PublicKey); !ok {
-		return ErrInvalidKeyType
-	}
-
-	if len(ed25519Key) != ed25519.PublicKeySize {
+func VerifyEd25519(signingString string, sig []byte, key ed25519.PublicKey) error {
+	if len(key) != ed25519.PublicKeySize {
 		return ErrInvalidKey
 	}
 
-	if !ed25519.Verify(ed25519Key, []byte(signingString), sig) {
+	if !ed25519.Verify(key, []byte(signingString), sig) {
 		return ErrEd25519Verification
 	}
 
 	return nil
 }
 
-func SignEd25519(signingString string, key any) ([]byte, error) {
-	var ed25519Key crypto.Signer
-	var ok bool
-
-	if ed25519Key, ok = key.(crypto.Signer); !ok {
-		return nil, ErrInvalidKeyType
-	}
-
-	if _, ok := ed25519Key.Public().(ed25519.PublicKey); !ok {
+func SignEd25519(signingString string, key ed25519.PrivateKey) ([]byte, error) {
+	if _, ok := key.Public().(ed25519.PublicKey); !ok {
 		return nil, ErrInvalidKey
 	}
 
-	sig, err := ed25519Key.Sign(rand.Reader, []byte(signingString), crypto.Hash(0))
+	sig, err := key.Sign(rand.Reader, []byte(signingString), crypto.Hash(0))
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +42,7 @@ func SignEd25519(signingString string, key any) ([]byte, error) {
 	return sig, nil
 }
 
-func ParseEd25519PrivateKey(base64Key string) (crypto.PrivateKey, error) {
+func ParseEd25519PrivateKey(base64Key string) (ed25519.PrivateKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(base64Key)
 	if err != nil {
 		return nil, err
@@ -73,7 +61,7 @@ func ParseEd25519PrivateKey(base64Key string) (crypto.PrivateKey, error) {
 	return pkey, nil
 }
 
-func ParseEd25519PublicKey(base64Key string) (crypto.PrivateKey, error) {
+func ParseEd25519PublicKey(base64Key string) (ed25519.PublicKey, error) {
 	bytes, err := base64.StdEncoding.DecodeString(base64Key)
 	if err != nil {
 		return nil, err
