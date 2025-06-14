@@ -219,7 +219,7 @@ func SendTokenRequest[T any](req *http.Request, client *http.Client) (*T, error)
 
 // DecodeIdToken decodes a JWT ID token string into the specified claims type T without verifying its signature.
 // It returns a pointer to the decoded claims or an error if decoding fails.
-func DecodeIdToken[T any](token string) (*T, error) {
+func DecodeIdToken[T jwt.Claims](token string) (*T, error) {
 	parsed, err := jwt.UnsecureDecodeToken[T](token)
 	if err != nil {
 		return nil, err

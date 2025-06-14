@@ -17,19 +17,19 @@ var (
 
 type PrivateKey ed25519.PrivateKey
 
-func VerifyEd25519(signingString string, sig []byte, key ed25519.PublicKey) error {
-	if len(key) != ed25519.PublicKeySize {
+func VerifyEd25519(signingString string, sig []byte, key *ed25519.PublicKey) error {
+	if len(*key) != ed25519.PublicKeySize {
 		return ErrInvalidKey
 	}
 
-	if !ed25519.Verify(key, []byte(signingString), sig) {
+	if !ed25519.Verify(*key, []byte(signingString), sig) {
 		return ErrEd25519Verification
 	}
 
 	return nil
 }
 
-func SignEd25519(signingString string, key ed25519.PrivateKey) ([]byte, error) {
+func SignEd25519(signingString string, key *ed25519.PrivateKey) ([]byte, error) {
 	if _, ok := key.Public().(ed25519.PublicKey); !ok {
 		return nil, ErrInvalidKey
 	}

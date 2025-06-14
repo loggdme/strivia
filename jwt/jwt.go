@@ -12,9 +12,10 @@ import (
 )
 
 var (
-	ErrInvalidKey     = errors.New("jwt: key is invalid")
-	ErrInvalidKeyType = errors.New("jwt: key is of invalid type")
-	ErrTokenMalformed = errors.New("jwt: token is malformed")
+	ErrInvalidKey            = errors.New("jwt: key is invalid")
+	ErrInvalidKeyType        = errors.New("jwt: key is of invalid type")
+	ErrTokenMalformed        = errors.New("jwt: token is malformed")
+	ErrTokenInvalidAlgorithm = errors.New("jwt: token has an invalid algorithm")
 )
 
 // NumericDate represents a JSON numeric date value, as referenced at
@@ -68,10 +69,15 @@ func (date *NumericDate) UnmarshalJSON(b []byte) (err error) {
 	return nil
 }
 
+// _EncodeSegment encodes the given byte slice into a base64 URL-encoded string without padding.
+// It is typically used for encoding segments of a JWT (JSON Web Token).
 func _EncodeSegment(seg []byte) string {
 	return base64.RawURLEncoding.EncodeToString(seg)
 }
 
+// _DecodeSegment decodes a base64 URL-encoded string segment using the RawURLEncoding
+// scheme. It returns the decoded bytes or an error if the input is not properly
+// base64 URL-encoded.
 func _DecodeSegment(segment string) ([]byte, error) {
 	return base64.RawURLEncoding.DecodeString(segment)
 }

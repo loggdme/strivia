@@ -14,16 +14,16 @@ type CustomClaims struct {
 }
 
 func main() {
-	privateKeyStr := "MC4CAQAwBQYDK2VwBCIEIJ7VP4bGde7HFmugf7wnZ+f09S4wXiHTPqCQB/HYLw+s"
-	// publicKeyStr := "MCowBQYDK2VwAyEA7rD1JBNE9qhzXQBN3mltLsAQy34dwDljiSPzmYeqiiM="
+	privateKeyStr := "MC4CAQAwBQYDK2VwBCIEIBNHmOiDd/gS4XOKxzBA+yLQ+9i9eFH50y1CfNYW8u2e"
+	publicKeyStr := "MCowBQYDK2VwAyEAIcjUkocF8Vxw6BcY3c8nx1DjgXcCLlqwFfLkma+uJr4="
 
 	newToken := jwt.NewToken(&CustomClaims{
-		Email: "user_new@loggd.me",
+		Email: "user@loggd.me",
 		RegisteredClaims: jwt.RegisteredClaims{
 			Issuer:    "loggd.me",
 			Subject:   "unique-user-id",
 			Audience:  []string{"loggd.me"},
-			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24)},
+			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 876.000)},
 			IssuedAt:  &jwt.NumericDate{Time: time.Now()},
 			NotBefore: &jwt.NumericDate{Time: time.Now()},
 			ID:        random.SecureRandomBase32String(32),
@@ -31,6 +31,17 @@ func main() {
 	})
 
 	privateKey, _ := jwt.ParseEd25519PrivateKey(privateKeyStr)
-	signedToken, _ := newToken.SignedString(privateKey)
-	fmt.Printf("Signed Token: %s\n", signedToken)
+	publicKey, _ := jwt.ParseEd25519PublicKey(publicKeyStr)
+
+	signedToken, _ := newToken.SignedString(&privateKey)
+	fmt.Printf("Signed Token: %s\n\n", signedToken)
+
+	expectedClaims := jwt.ExpectedClaims{
+		Issuer:   "loggd.me",
+		Subject:  "unique-user-id",
+		Audience: []string{"loggd.me"},
+	}
+
+	parsedToken, _ := jwt.VerifyToken[CustomClaims](signedToken, &publicKey, &expectedClaims)
+	fmt.Printf("Token Claims: %+v\n\n", parsedToken.Claims)
 }

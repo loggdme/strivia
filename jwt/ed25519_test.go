@@ -32,7 +32,7 @@ func TestVerifyEd25519(t *testing.T) {
 
 		parts := strings.Split(data.tokenString, ".")
 		sig, _ := base64.RawURLEncoding.DecodeString(parts[2])
-		err = VerifyEd25519(strings.Join(parts[0:2], "."), sig, ed25519Key)
+		err = VerifyEd25519(strings.Join(parts[0:2], "."), sig, &ed25519Key)
 
 		if data.valid {
 			assert.NoError(t, err, "Error while verifying key")
@@ -48,7 +48,7 @@ func TestSignEd25519(t *testing.T) {
 		assert.NoError(t, err, "Unable to parse Ed25519 private key")
 
 		parts := strings.Split(data.tokenString, ".")
-		sig, err := SignEd25519(strings.Join(parts[0:2], "."), ed25519Key)
+		sig, err := SignEd25519(strings.Join(parts[0:2], "."), &ed25519Key)
 		assert.NoError(t, err, "Error signing token")
 
 		ssig := _EncodeSegment(sig)

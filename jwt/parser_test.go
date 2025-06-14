@@ -51,61 +51,92 @@ func TestSplitToken_TooManyPartsFail(t *testing.T) {
 func TestUnsecureDecodeToken_ValidToken(t *testing.T) {
 	tokenString := _EncodeSegment([]byte(`{"alg":"none"}`)) + "." + _EncodeSegment([]byte(`{"sub":"123"}`)) + "." + _EncodeSegment([]byte("sig"))
 
-	token, err := UnsecureDecodeToken[struct {
-		Sub string `json:"sub"`
-	}](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, token)
 	assert.Equal(t, token.Raw, tokenString)
 	assert.Equal(t, "none", token.Header["alg"])
-	assert.Equal(t, "123", token.Claims.Sub)
+	assert.Equal(t, "123", token.Claims.Subject)
 	assert.Equal(t, []byte("sig"), token.Signature)
 }
 
 func TestUnsecureDecodeToken_MalformedTokenParts(t *testing.T) {
 	tokenString := "onlyonepart"
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.Nil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 
 	tokenString = "a.b.c.d"
-	token, err = UnsecureDecodeToken[map[string]any](tokenString)
+	token, err = UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.Nil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 }
 
 func TestUnsecureDecodeToken_InvalidBase64Header(t *testing.T) {
 	tokenString := "!!invalid!!." + _EncodeSegment([]byte("{}")) + "." + _EncodeSegment([]byte("sig"))
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.Nil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 }
 
 func TestUnsecureDecodeToken_InvalidJSONHeader(t *testing.T) {
 	tokenString := _EncodeSegment([]byte("not_json")) + "." + _EncodeSegment([]byte("{}")) + "." + _EncodeSegment([]byte("sig"))
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.NotNil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 }
 
 func TestUnsecureDecodeToken_InvalidBase64Claims(t *testing.T) {
 	tokenString := _EncodeSegment([]byte("{}")) + ".!!invalid!!." + _EncodeSegment([]byte("sig"))
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.Nil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 }
 
 func TestUnsecureDecodeToken_InvalidJSONClaims(t *testing.T) {
 	tokenString := _EncodeSegment([]byte("{}")) + "." + _EncodeSegment([]byte("not_json")) + "." + _EncodeSegment([]byte("sig"))
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.NotNil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
 }
 
 func TestUnsecureDecodeToken_InvalidBase64Signature(t *testing.T) {
 	tokenString := _EncodeSegment([]byte("{}")) + "." + _EncodeSegment([]byte("{}")) + ".!!invalid!!"
-	token, err := UnsecureDecodeToken[map[string]any](tokenString)
+	token, err := UnsecureDecodeToken[RegisteredClaims](tokenString)
 	assert.Nil(t, token)
 	assert.ErrorIs(t, err, ErrTokenMalformed)
+}
+
+/* VerifyToken */
+
+func TestVerifyToken_ValidToken(t *testing.T) {
+	tokenString := "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAbG9nZ2QubWUiLCJpc3MiOiJsb2dnZC5tZSIsInN1YiI6InVuaXF1ZS11c2VyLWlkIiwiYXVkIjpbImxvZ2dkLm1lIl0sImV4cCI6MTc1MzA3MzE3NCwibmJmIjoxNzQ5OTE5NTc0LCJpYXQiOjE3NDk5MTk1NzQsImp0aSI6IkJGM0tWNEhRQ1hYWUtLSFdaN0VIU1VYT0xLN05MRUlLVEVZMkdBR0dZS0NBQUZMMjVVU0EifQ.IniNMxFR9Wcux1Xir2Zx_gZSYmkNjJXuRHk36xlTe-dBYFvtPPJRctwK56LJjvKMKPj9M89oXVpzd9hGWusGAQ"
+
+	publicKey, err := ParseEd25519PublicKey("MCowBQYDK2VwAyEAIcjUkocF8Vxw6BcY3c8nx1DjgXcCLlqwFfLkma+uJr4=")
+	assert.NoError(t, err)
+
+	expectedClaims := ExpectedClaims{
+		Issuer:   "loggd.me",
+		Subject:  "unique-user-id",
+		Audience: []string{"loggd.me"},
+	}
+
+	_, err = VerifyToken[RegisteredClaims](tokenString, &publicKey, &expectedClaims)
+	assert.NoError(t, err, "Expected no error for valid token")
+}
+
+func TestVerifyToken_InvalidAlgorithm(t *testing.T) {
+	_, err := VerifyToken[RegisteredClaims]("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2ln", nil, nil)
+	assert.ErrorIs(t, err, ErrTokenInvalidAlgorithm)
+}
+
+func TestVerifyToken_SignatureVerificationFail(t *testing.T) {
+	tokenString := "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjMifQ.1PUyBb7hgI5SH-6aCWrYiGBy02Y8gwLmdh-j7JmnU7QUMszSyGSOPvGDW8zFI851lprf1M7bJ13KNSDwjbMTHBQ"
+
+	publicKey, err := ParseEd25519PublicKey("MCowBQYDK2VwAyEAIcjUkocF8Vxw6BcY3c8nx1DjgXcCLlqwFfLkma+uJr4=")
+	assert.NoError(t, err)
+
+	_, err = VerifyToken[RegisteredClaims](tokenString, &publicKey, nil)
+	assert.ErrorIs(t, err, ErrEd25519Verification)
 }

@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"github.com/loggdme/strivia/jwt"
 	"github.com/loggdme/strivia/oauth"
 )
 
@@ -49,7 +50,7 @@ func (p *GoogleProvider) GetUserFromIdToken(idToken string) (*oauth.OAuth2User, 
 	}
 
 	return &oauth.OAuth2User{
-		ID:    claims.Sub,
+		ID:    claims.Subject,
 		Email: claims.Email,
 	}, nil
 }
@@ -57,5 +58,5 @@ func (p *GoogleProvider) GetUserFromIdToken(idToken string) (*oauth.OAuth2User, 
 type _GoogleIdTokenClaims struct {
 	Email         string `json:"email"`
 	EmailVerified bool   `json:"email_verified"`
-	Sub           string `json:"sub"`
+	jwt.RegisteredClaims
 }

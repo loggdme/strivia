@@ -1,18 +1,52 @@
 package jwt
 
 import (
+	"crypto/ed25519"
 	"strings"
 
 	"github.com/goccy/go-json"
 )
 
-func UnsecureDecodeToken[Claims any](tokenString string) (*Token[Claims], error) {
+// VerifyToken verifies a JWT token string using the provided Ed25519 public key.
+// It decodes the token, checks the algorithm, verifies the signature, and validates the claims.
+// If the token is valid, it returns the parsed Token with its Valid field set to true.
+// The generic type T must satisfy the Claims interface.
+func VerifyToken[T Claims](tokenString string, key *ed25519.PublicKey, expected *ExpectedClaims) (*Token[T], error) {
+	token, err := UnsecureDecodeToken[T](tokenString)
+	if err != nil {
+		return nil, err
+	}
+
+	if token.Header["alg"] != "EdDSA" {
+		return nil, ErrTokenInvalidAlgorithm
+	}
+
+	tokenPayload := token.RawParts[0] + "." + token.RawParts[1]
+	if err := VerifyEd25519(tokenPayload, token.Signature, key); err != nil {
+		return nil, err
+	}
+
+	if err := validateClaims(*token.Claims, expected); err != nil {
+		return nil, err
+	}
+
+	token.Valid = true
+
+	return token, nil
+}
+
+// UnsecureDecodeToken decodes a JWT token string without verifying its signature.
+// It splits the token into its header, claims, and signature parts, decodes each segment,
+// and unmarshals the header and claims into their respective structures.
+// This function does not perform any cryptographic verification and should only be used
+// in trusted environments or for debugging purposes.
+func UnsecureDecodeToken[T Claims](tokenString string) (*Token[T], error) {
 	parts, ok := splitToken(tokenString)
 	if !ok {
 		return nil, ErrTokenMalformed
 	}
 
-	token := &Token[Claims]{Raw: tokenString}
+	token := &Token[T]{Raw: tokenString, RawParts: parts}
 
 	headerBytes, err := _DecodeSegment(parts[0])
 	if err != nil {
