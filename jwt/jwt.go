@@ -69,6 +69,39 @@ func (date *NumericDate) UnmarshalJSON(b []byte) (err error) {
 	return nil
 }
 
+// Audience represents a list of strings that can be used to specify the audience for a JWT.
+// It is typically used in the `aud` (Audience) claim of a JWT to indicate the intended recipients of the token.
+// The audience can be a single string or an array of strings, allowing for flexibility in specifying
+type Audience []string
+
+func (aud *Audience) UnmarshalJSON(b []byte) error {
+	var single string
+	if err := json.Unmarshal(b, &single); err == nil {
+		*aud = Audience{single}
+		return nil
+	}
+
+	var multiple []string
+	if err := json.Unmarshal(b, &multiple); err != nil {
+		return fmt.Errorf("could not parse Audience: %w", err)
+	}
+
+	*aud = multiple
+	return nil
+}
+
+func (aud Audience) MarshalJSON() ([]byte, error) {
+	if len(aud) == 0 {
+		return json.Marshal(nil)
+	}
+
+	if len(aud) == 1 {
+		return json.Marshal(aud[0])
+	}
+
+	return json.Marshal([]string(aud))
+}
+
 // _EncodeSegment encodes the given byte slice into a base64 URL-encoded string without padding.
 // It is typically used for encoding segments of a JWT (JSON Web Token).
 func _EncodeSegment(seg []byte) string {

@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile - JWT Token Info</title>
+    <style>
+      body {
+        background: #f7f7f9;
+        min-height: 100vh;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Segoe UI', Arial, sans-serif;
+      }
+      .container {
+        background: #fff;
+        border-radius: 12px;
+        box-shadow: 0 2px 16px rgba(0, 0, 0, 0.07);
+        padding: 2.5rem 2rem;
+        min-width: 340px;
+        max-width: 90vw;
+        text-align: center;
+      }
+      h2 {
+        margin-bottom: 1.2rem;
+        color: #333;
+      }
+      pre {
+        background: #f0f0f0;
+        border-radius: 8px;
+        padding: 1rem;
+        text-align: left;
+        overflow-x: auto;
+        font-size: 1rem;
+      }
+      .error {
+        color: #c00;
+        margin-top: 1rem;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Decoded JWT Token</h2>
+      <div id="token-info"></div>
+    </div>
+    <script>
+      function getQueryParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+      }
+
+      function decodeBase64Url(str) {
+        str = str.replace(/-/g, '+').replace(/_/g, '/');
+        while (str.length % 4) str += '=';
+        try {
+          return decodeURIComponent(escape(window.atob(str)));
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function parseJwt(token) {
+        if (!token) return null;
+        const parts = token.split('.');
+        if (parts.length !== 3) return null;
+        const [header, payload, signature] = parts;
+        const decodedHeader = decodeBase64Url(header);
+        const decodedPayload = decodeBase64Url(payload);
+        if (!decodedHeader || !decodedPayload) return null;
+        return {
+          header: JSON.parse(decodedHeader),
+          payload: JSON.parse(decodedPayload),
+          signature,
+        };
+      }
+
+      const token = getQueryParam('token');
+      if (token) {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('token');
+        window.history.replaceState(
+          {},
+          document.title,
+          url.pathname + url.search
+        );
+      }
+      const infoDiv = document.getElementById('token-info');
+      if (!token) {
+        infoDiv.innerHTML =
+          '<div class="error">No token provided in query parameter.</div>';
+      } else {
+        const jwt = parseJwt(token);
+        if (!jwt) {
+          infoDiv.innerHTML = '<div class="error">Invalid JWT token.</div>';
+        } else {
+          infoDiv.innerHTML =
+            '<b>Header:</b><pre>' +
+            JSON.stringify(jwt.header, null, 2) +
+            '</pre>' +
+            '<b>Payload:</b><pre>' +
+            JSON.stringify(jwt.payload, null, 2) +
+            '</pre>';
+        }
+      }
+    </script>
+  </body>
+</html>

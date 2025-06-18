@@ -6,7 +6,7 @@ type Claims interface {
 	GetNotBefore() *NumericDate
 	GetIssuer() string
 	GetSubject() string
-	GetAudience() []string
+	GetAudience() Audience
 	GetID() string
 }
 
@@ -20,7 +20,7 @@ type RegisteredClaims struct {
 	Subject string `json:"sub,omitempty"`
 
 	// the `aud` (Audience) claim. See https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.3
-	Audience []string `json:"aud,omitempty"`
+	Audience Audience `json:"aud,omitempty"`
 
 	// the `exp` (Expiration Time) claim. See https://datatracker.ietf.org/doc/html/rfc7519#section-4.1.4
 	ExpiresAt *NumericDate `json:"exp,omitempty"`
@@ -46,7 +46,7 @@ func (c RegisteredClaims) GetSubject() string {
 }
 
 // GetAudience implements the Claims interface.
-func (c RegisteredClaims) GetAudience() []string {
+func (c RegisteredClaims) GetAudience() Audience {
 	return c.Audience
 }
 

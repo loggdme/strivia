@@ -162,7 +162,7 @@ func (p *OAuth2Client) ValidateAuthorizationCode(endpoint string, code string, c
 		oauth2Tokens.IdToken = &idToken
 	}
 
-	return oauth2Tokens, ErrTokenResponse
+	return oauth2Tokens, nil
 }
 
 // CreateOAuth2Request constructs an HTTP POST request for OAuth2 endpoints with the given URL and form-encoded body.
