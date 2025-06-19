@@ -1,6 +1,11 @@
 package providers
 
 import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/loggdme/strivia/oauth"
 )
 
@@ -35,19 +40,41 @@ func (p *DiscordProvider) ValidateAuthorizationCode(code string) (*oauth.OAuth2T
 	return p.Client.ValidateAuthorizationCode("https://discord.com/api/oauth2/token", code, nil)
 }
 
-// GetUser retrieves the authenticated user's information from GitHub using the provided access token.
-// It first obtains the user's primary email address, then fetches the user's profile data from the GitHub API.
-// Returns an OAuth2User containing the user's ID, username, email, and avatar URL, or an error if any step fails.
-//
+// GetUser retrieves the authenticated user's information from Discord using the provided access token.
 // If no verified email is found, it returns an error indicating that no verified email is available.
-// func (p *DiscordProvider) GetUser(client *http.Client, accessToken string) (*oauth.OAuth2User, error) {
-// 	req, _ := http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
-// 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
-//
-// }
+func (p *DiscordProvider) GetUser(accessToken string) (*oauth.OAuth2User, error) {
+	req, _ := http.NewRequest("GET", "https://discord.com/api/users/@me", nil)
+	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+
+	resp, err := p.Client.Http.Do(req)
+	if err != nil || resp.StatusCode != http.StatusOK {
+		return nil, oauth.ErrFetchingUser
+	}
+	defer resp.Body.Close()
+
+	bodyBytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, oauth.ErrFetchingUser
+	}
+
+	var parsedResponse _DiscordUserResponse
+	err = json.Unmarshal(bodyBytes, &parsedResponse)
+	if err != nil {
+		return nil, oauth.ErrFetchingUser
+	}
+
+	if parsedResponse.Email == "" || !parsedResponse.Verified {
+		return nil, oauth.ErrNoVerifiedEmail
+	}
+
+	return &oauth.OAuth2User{
+		ID:    parsedResponse.ID,
+		Email: parsedResponse.Email,
+	}, nil
+}
 
 type _DiscordUserResponse struct {
-	ID       int64  `json:"id"`
+	ID       string `json:"id"`
 	Email    string `json:"email"`
-	Verified string `json:"verified"`
+	Verified bool   `json:"verified"`
 }

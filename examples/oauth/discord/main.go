@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	discord := strivia_oauth_providers.NewDiscordProvider("", "", "http://localhost:8080")
+	discord := strivia_oauth_providers.NewDiscordProvider("CLIENT_ID", "CLIENT_SECRET", "http://localhost:8080")
 
 	state := strivia_oauth.GenerateRandomState()
 
@@ -24,7 +24,6 @@ func main() {
 	fmt.Printf("\n")
 
 	tokens, _ := discord.ValidateAuthorizationCode(code)
-	fmt.Printf("%+v\n\n", tokens)
-	// user, _ := google.GetUser(tokens.AccessToken)
-	// fmt.Printf("%+v\n\n", user)
+	user, _ := discord.GetUser(tokens.AccessToken)
+	fmt.Printf("%+v\n\n", user)
 }
