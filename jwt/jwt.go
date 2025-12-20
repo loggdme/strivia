@@ -2,13 +2,12 @@ package jwt
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"math"
 	"strconv"
 	"time"
-
-	"github.com/goccy/go-json"
 )
 
 var (

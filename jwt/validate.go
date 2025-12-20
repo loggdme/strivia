@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"errors"
+	"slices"
 	"strings"
 	"time"
 )
@@ -145,7 +146,7 @@ func verifySubject(claims Claims, expectedSubject string) error {
 		return ErrSubjectIsRequired
 	}
 
-	if subject != expectedSubject {
+	if expectedSubject != "" && subject != expectedSubject {
 		return ErrSubjectMismatch
 	}
 
@@ -161,10 +162,8 @@ func verifyAudience(claims Claims, expectedAudience []string) error {
 	}
 
 	for _, expAud := range expectedAudience {
-		for _, aud := range audience {
-			if aud == expAud {
-				return nil
-			}
+		if slices.Contains(audience, expAud) {
+			return nil
 		}
 	}
 

@@ -23,7 +23,7 @@ func main() {
 			Issuer:    "loggd.me",
 			Subject:   "unique-user-id",
 			Audience:  []string{"loggd.me"},
-			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 876.000)},
+			ExpiresAt: &jwt.NumericDate{Time: time.Now().Add(time.Hour * 24 * 365)},
 			IssuedAt:  &jwt.NumericDate{Time: time.Now()},
 			NotBefore: &jwt.NumericDate{Time: time.Now()},
 			ID:        random.SecureRandomBase32String(32),
@@ -38,7 +38,6 @@ func main() {
 
 	expectedClaims := jwt.ExpectedClaims{
 		Issuer:   "loggd.me",
-		Subject:  "unique-user-id",
 		Audience: []string{"loggd.me"},
 	}
 

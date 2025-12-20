@@ -1,0 +1,28 @@
+name: CI Pipeline
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  lint:
+    name: Lint, test and build loggdme/strivia
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.25.5"
+
+      - name: Check code formatting
+        run: if [ "$( gofmt -s -l .| wc -l)" -gt 0 ]; then exit 1; fi
+
+      - name: Check code style
+        run: go vet ./...
+
+      - name: Run tests
+        run: go test -race $(go list ./... | grep -v /examples/)

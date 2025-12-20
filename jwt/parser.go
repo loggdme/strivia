@@ -2,9 +2,8 @@ package jwt
 
 import (
 	"crypto/ed25519"
+	"encoding/json"
 	"strings"
-
-	"github.com/goccy/go-json"
 )
 
 // VerifyToken verifies a JWT token string using the provided Ed25519 public key.
@@ -37,7 +36,7 @@ func VerifyToken[T Claims](tokenString string, key *ed25519.PublicKey, expected 
 
 // UnsecureDecodeToken decodes a JWT token string without verifying its signature.
 // It splits the token into its header, claims, and signature parts, decodes each segment,
-// and unmarshals the header and claims into their respective structures.
+// and unmarshal the header and claims into their respective structures.
 // This function does not perform any cryptographic verification and should only be used
 // in trusted environments or for debugging purposes.
 func UnsecureDecodeToken[T Claims](tokenString string) (*Token[T], error) {
