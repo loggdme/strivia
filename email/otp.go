@@ -1,4 +1,4 @@
-package otp
+package email
 
 import (
 	"crypto/rand"
@@ -20,10 +20,6 @@ var (
 	ErrParseRandomOtpFromStringFormat = errors.New("otp: invalid random OTP format")
 	// ErrParseRandomOtpFromStringValues indicates that the provided string does not contain valid values.
 	ErrParseRandomOtpFromStringValues = errors.New("otp: invalid random OTP values")
-	// ErrGenerateRandomOtpMissingUserEmail indicates that the user email is required but not provided.
-	ErrGenerateRandomOtpMissingUserEmail = errors.New("otp: user_email must be set")
-	// ErrGenerateRandomOtpMissingUserID indicates that the user ID is required but not provided.
-	ErrGenerateRandomOtpMissingUserID = errors.New("otp: user_id must be set")
 )
 
 // GenerateOptsRandomOTP holds the configuration for generating an OTP code.
@@ -32,30 +28,21 @@ type GenerateOptsRandomOTP struct {
 	Length int
 	// Validity specifies the duration the OTP code should be valid for. Defaults to 15 minutes.
 	Validity time.Duration
-	// UserID is used to tie the code to a specific user.
-	UserID string
-	// UserEmail is used to associate the OTP code with a user's email.
-	UserEmail string
 }
 
 // RandomOTPCode represents an generated OTP code with its associated data.
 type RandomOTPCode struct {
 	Code      string    `json:"code"`
-	ExpiresAt time.Time `json:"expires_at"`
-	UserID    string    `json:"user_id"`
-	UserEmail string    `json:"user_email"`
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
+var DefaultOTPOpts = GenerateOptsRandomOTP{
+	Length:   6,
+	Validity: 15 * time.Minute,
 }
 
 // GenerateRandomOTP generates a cryptographically secure one-time password based on the provided configuration.
 func GenerateRandomOTP(opts GenerateOptsRandomOTP) (*RandomOTPCode, error) {
-	if opts.UserEmail == "" {
-		return nil, ErrGenerateRandomOtpMissingUserEmail
-	}
-
-	if opts.UserID == "" {
-		return nil, ErrGenerateRandomOtpMissingUserID
-	}
-
 	if opts.Length <= 0 {
 		opts.Length = 6
 	}
@@ -74,12 +61,7 @@ func GenerateRandomOTP(opts GenerateOptsRandomOTP) (*RandomOTPCode, error) {
 		code[i] = AlphanumericCharacters[randomIndex]
 	}
 
-	return &RandomOTPCode{
-		Code:      string(code),
-		ExpiresAt: time.Now().Add(opts.Validity),
-		UserID:    opts.UserID,
-		UserEmail: opts.UserEmail,
-	}, nil
+	return &RandomOTPCode{Code: string(code), ExpiresAt: time.Now().Add(opts.Validity)}, nil
 }
 
 // RandomOTPFromString parses a json representation of a random OTP code and returns a RandomOTPCode instance.
@@ -90,16 +72,11 @@ func RandomOTPFromString(s string) (*RandomOTPCode, error) {
 		return nil, fmt.Errorf("%w: %v", ErrParseRandomOtpFromStringFormat, err)
 	}
 
-	if data.Code == "" || data.UserID == "" || data.UserEmail == "" || data.ExpiresAt.IsZero() {
+	if data.Code == "" || data.ExpiresAt.IsZero() {
 		return nil, ErrParseRandomOtpFromStringValues
 	}
 
-	return &RandomOTPCode{
-		Code:      data.Code,
-		ExpiresAt: data.ExpiresAt,
-		UserID:    data.UserID,
-		UserEmail: data.UserEmail,
-	}, nil
+	return &RandomOTPCode{Code: data.Code, ExpiresAt: data.ExpiresAt}, nil
 }
 
 // IsValid checks if the OTP code is still valid.

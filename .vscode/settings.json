@@ -17,6 +17,7 @@
     "editor.defaultFormatter": "golang.go"
   },
   "cSpell.words": [
+    "ABCDEFGHJKLMNPQRSTUVWXYZ",
     "gofmt",
     "HOTP",
     "loggd",

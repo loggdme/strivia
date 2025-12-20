@@ -16,12 +16,4 @@ func main() {
 	println("Key:", key.String())
 	println("Passcode:", passcode)
 	println("Code is valid:", isValid)
-
-	emailOtp, _ := strivia_otp.GenerateRandomOTP(strivia_otp.GenerateOptsRandomOTP{
-		UserID:    "12345",
-		UserEmail: "tobias@loggd.me",
-	})
-
-	println("Random OTP Code:", emailOtp.String())
-	println("Random OTP is Valid:", emailOtp.IsValid())
 }

@@ -1,4 +1,4 @@
-package otp
+package email
 
 import (
 	"encoding/json"
@@ -9,28 +9,20 @@ import (
 )
 
 func TestGenerateRandomOTP_Defaults(t *testing.T) {
-	otp, err := GenerateRandomOTP(GenerateOptsRandomOTP{
-		UserID:    "user",
-		UserEmail: "user@loggd.me",
-	})
+	otp, err := GenerateRandomOTP(DefaultOTPOpts)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	if len(otp.Code) != 6 {
 		t.Errorf("expected code length 6, got %d", len(otp.Code))
 	}
-	if otp.ExpiresAt.Sub(time.Now()) < 14*time.Minute {
-		t.Errorf("expected validity at least 14 minutes, got %v", otp.ExpiresAt.Sub(time.Now()))
+	if time.Until(otp.ExpiresAt) < 14*time.Minute {
+		t.Errorf("expected validity at least 14 minutes, got %v", time.Until(otp.ExpiresAt))
 	}
 }
 
 func TestGenerateRandomOTP_CustomOptions(t *testing.T) {
-	opts := GenerateOptsRandomOTP{
-		Length:    8,
-		Validity:  30 * time.Minute,
-		UserID:    "user",
-		UserEmail: "user@loggd.me",
-	}
+	opts := GenerateOptsRandomOTP{Length: 8, Validity: 30 * time.Minute}
 	otp, err := GenerateRandomOTP(opts)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -38,19 +30,13 @@ func TestGenerateRandomOTP_CustomOptions(t *testing.T) {
 	if len(otp.Code) != 8 {
 		t.Errorf("expected code length 8, got %d", len(otp.Code))
 	}
-	if otp.UserID != opts.UserID {
-		t.Errorf("expected UserID %q, got %q", opts.UserID, otp.UserID)
-	}
-	if otp.UserEmail != opts.UserEmail {
-		t.Errorf("expected UserEmail %q, got %q", opts.UserEmail, otp.UserEmail)
-	}
-	if otp.ExpiresAt.Sub(time.Now()) < 29*time.Minute {
-		t.Errorf("expected validity at least 29 minutes, got %v", otp.ExpiresAt.Sub(time.Now()))
+	if time.Until(otp.ExpiresAt) < 29*time.Minute {
+		t.Errorf("expected validity at least 29 minutes, got %v", time.Until(otp.ExpiresAt))
 	}
 }
 
 func TestGenerateRandomOTP_AlphanumericCharacters(t *testing.T) {
-	otp, err := GenerateRandomOTP(GenerateOptsRandomOTP{Length: 20, UserEmail: "user@loggd.me", UserID: "user"})
+	otp, err := GenerateRandomOTP(GenerateOptsRandomOTP{Length: 20})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -65,7 +51,7 @@ func TestGenerateRandomOTP_AlphanumericCharacters(t *testing.T) {
 func TestGenerateRandomOTP_UniqueCodes(t *testing.T) {
 	codes := make(map[string]struct{})
 	for range 10 {
-		otp, err := GenerateRandomOTP(GenerateOptsRandomOTP{UserEmail: "user@loggd.me", UserID: "user"})
+		otp, err := GenerateRandomOTP(DefaultOTPOpts)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
 		}
@@ -73,20 +59,6 @@ func TestGenerateRandomOTP_UniqueCodes(t *testing.T) {
 			t.Errorf("duplicate code generated: %s", otp.Code)
 		}
 		codes[otp.Code] = struct{}{}
-	}
-}
-
-func TestGenerateRandomOTP_MissingUserEmail(t *testing.T) {
-	_, err := GenerateRandomOTP(GenerateOptsRandomOTP{UserID: "user"})
-	if err == nil || err != ErrGenerateRandomOtpMissingUserEmail {
-		t.Errorf("expected error for missing UserEmail, got %v", err)
-	}
-}
-
-func TestGenerateRandomOTP_MissingUserID(t *testing.T) {
-	_, err := GenerateRandomOTP(GenerateOptsRandomOTP{UserEmail: "user@loggd.me"})
-	if err == nil || err != ErrGenerateRandomOtpMissingUserID {
-		t.Errorf("expected error for missing UserID, got %v", err)
 	}
 }
 
@@ -116,12 +88,7 @@ func TestRandomOTPCode_IsValid(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		otp := &RandomOTPCode{
-			Code:      "ABCDEF",
-			ExpiresAt: tt.expiresAt,
-			UserID:    "user",
-			UserEmail: "user@loggd.me",
-		}
+		otp := &RandomOTPCode{Code: "ABCDEF", ExpiresAt: tt.expiresAt}
 		got := otp.IsValid()
 		if got != tt.want {
 			t.Errorf("%s: expected %v, got %v", tt.name, tt.want, got)
@@ -130,12 +97,7 @@ func TestRandomOTPCode_IsValid(t *testing.T) {
 }
 
 func TestRandomOTPCode_String(t *testing.T) {
-	otp := &RandomOTPCode{
-		Code:      "ABCDEFG",
-		ExpiresAt: time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC),
-		UserID:    "user",
-		UserEmail: "user@loggd.me",
-	}
+	otp := &RandomOTPCode{Code: "ABCDEFG", ExpiresAt: time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)}
 	got := otp.String()
 
 	var parsed RandomOTPCode
@@ -148,16 +110,10 @@ func TestRandomOTPCode_String(t *testing.T) {
 	if !parsed.ExpiresAt.Equal(otp.ExpiresAt) {
 		t.Errorf("expected ExpiresAt %v, got %v", otp.ExpiresAt, parsed.ExpiresAt)
 	}
-	if parsed.UserID != otp.UserID {
-		t.Errorf("expected UserID %q, got %q", otp.UserID, parsed.UserID)
-	}
-	if parsed.UserEmail != otp.UserEmail {
-		t.Errorf("expected UserEmail %q, got %q", otp.UserEmail, parsed.UserEmail)
-	}
 }
 
 func TestRandomOTPFromString_ValidInput(t *testing.T) {
-	jsonStr := "{\"code\":\"ABCDEFG\",\"expires_at\":\"2024-06-01T12:00:00Z\",\"user_id\":\"user\",\"user_email\":\"user@loggd.me\"}"
+	jsonStr := "{\"code\":\"ABCDEFG\",\"expiresAt\":\"2024-06-01T12:00:00Z\"}"
 
 	got, err := RandomOTPFromString(jsonStr)
 	if err != nil {
@@ -171,18 +127,10 @@ func TestRandomOTPFromString_ValidInput(t *testing.T) {
 	if !got.ExpiresAt.Equal(time.Date(2024, 6, 1, 12, 0, 0, 0, time.UTC)) {
 		t.Errorf("expected ExpiresAt %s, got %v", "2024-06-01T12:00:00Z", got.ExpiresAt)
 	}
-
-	if got.UserID != "user" {
-		t.Errorf("expected UserID %q, got %q", "user", got.UserID)
-	}
-
-	if got.UserEmail != "user@loggd.me" {
-		t.Errorf("expected UserEmail %q, got %q", "user@loggd.me", got.UserEmail)
-	}
 }
 
 func TestRandomOTPFromString_InvalidJSON(t *testing.T) {
-	invalidJSON := `{"code": "ABC", "expires_at": "not-a-date", "user_id": "user", "user_email": "user@loggd.me"`
+	invalidJSON := `{"code": "ABC", "expiresAt": "not-a-date"}`
 	_, err := RandomOTPFromString(invalidJSON)
 	if err == nil || !errors.Is(err, ErrParseRandomOtpFromStringFormat) {
 		t.Errorf("expected ErrParseRandomOtpFromStringFormat, got %v", err)
@@ -196,19 +144,11 @@ func TestRandomOTPFromString_MissingFields(t *testing.T) {
 	}{
 		{
 			name: "missing code",
-			json: `{"expires_at":"2024-06-01T12:00:00Z","user_id":"user","user_email":"user@loggd.me"}`,
+			json: `{"expiresAt":"2024-06-01T12:00:00Z"}`,
 		},
 		{
-			name: "missing user_id",
-			json: `{"code":"ABCDEFG","expires_at":"2024-06-01T12:00:00Z","user_email":"user@loggd.me"}`,
-		},
-		{
-			name: "missing user_email",
-			json: `{"code":"ABCDEFG","expires_at":"2024-06-01T12:00:00Z","user_id":"user"}`,
-		},
-		{
-			name: "missing expires_at",
-			json: `{"code":"ABCDEFG","user_id":"user","user_email":"user@loggd.me"}`,
+			name: "missing expiresAt",
+			json: `{"code":"ABCDEFG"}`,
 		},
 	}
 
