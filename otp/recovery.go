@@ -5,14 +5,18 @@ import (
 	strivia_random "github.com/loggdme/strivia/random"
 )
 
-func GenerateRecoveryCode(length int) string {
-	return strivia_random.SecureRandomBase32String(uint32(length))
+const (
+	RecoveryCodeLength = 16
+)
+
+func GenerateRecoveryCode(length uint32) string {
+	return strivia_random.SecureRandomBase32StringExactLength(length)
 }
 
 func GenerateRecoveryCodes(count int) []string {
 	codes := make([]string, count)
 	for i := range codes {
-		codes[i] = GenerateRecoveryCode(16)
+		codes[i] = GenerateRecoveryCode(RecoveryCodeLength)
 	}
 	return codes
 }
