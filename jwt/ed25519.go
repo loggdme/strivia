@@ -7,7 +7,6 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"errors"
-	"fmt"
 )
 
 var (
@@ -21,8 +20,6 @@ type PublicKey ed25519.PublicKey
 
 func VerifyEd25519(signingString string, sig []byte, key *PublicKey) error {
 	publicKey := ed25519.PublicKey(*key)
-
-	fmt.Println("==============key", len(*key))
 
 	if len(*key) != ed25519.PublicKeySize {
 		return ErrInvalidKey

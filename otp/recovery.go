@@ -17,11 +17,16 @@ func GenerateRecoveryCodes(count int) []string {
 	return codes
 }
 
+func HashRecoveryCode(code string) string {
+	return hashing.CreateHash(code, hashing.DefaultParamsOWASP)
+}
+
 func HashRecoveryCodes(codes []string) []string {
+	hashedCodes := make([]string, len(codes))
 	for i := range codes {
-		codes[i] = hashing.CreateHash(codes[i], hashing.DefaultParamsOWASP)
+		hashedCodes[i] = HashRecoveryCode(codes[i])
 	}
-	return codes
+	return hashedCodes
 }
 
 func VerifyRecoveryCode(code string, hash string) bool {
