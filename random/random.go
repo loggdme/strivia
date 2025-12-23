@@ -11,8 +11,14 @@ import (
 var b32NoPadding = base32.StdEncoding.WithPadding(base32.NoPadding)
 
 // SecureRandomBase32String generates a cryptographically secure random base32 string of the specified length.
+// NOTE: The length is the length of the random bytes which are encoded. The string will be longer.
 func SecureRandomBase32String(length uint32) string {
 	return b32NoPadding.EncodeToString(SecureRandomBytes(length))
+}
+
+// SecureRandomBase32StringExactLength generates a cryptographically secure random base32 string of the exact specified length.
+func SecureRandomBase32StringExactLength(length uint32) string {
+	return SecureRandomBase32String(length)[:length]
 }
 
 // SecureRandomChoice selects a random item from a slice of items using a cryptographically secure method.
