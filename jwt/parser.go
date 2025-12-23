@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"crypto/ed25519"
 	"encoding/json"
 	"strings"
 )
@@ -10,7 +9,7 @@ import (
 // It decodes the token, checks the algorithm, verifies the signature, and validates the claims.
 // If the token is valid, it returns the parsed Token with its Valid field set to true.
 // The generic type T must satisfy the Claims interface.
-func VerifyToken[T Claims](tokenString string, key *ed25519.PublicKey, expected *ExpectedClaims) (*Token[T], error) {
+func VerifyToken[T Claims](tokenString string, key *PublicKey, expected *ExpectedClaims) (*Token[T], error) {
 	token, err := UnsecureDecodeToken[T](tokenString)
 	if err != nil {
 		return nil, err

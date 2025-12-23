@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"crypto/ed25519"
 	"encoding/json"
 )
 
@@ -28,7 +27,7 @@ func NewToken[T Claims](claims *T) *Token[T] {
 // https://golang-jwt.github.io/jwt/usage/signing_methods/#signing-methods-and-key-types
 // for an overview of the different signing methods and their respective key
 // types.
-func (t *Token[T]) SignedString(key *ed25519.PrivateKey) (string, error) {
+func (t *Token[T]) SignedString(key *PrivateKey) (string, error) {
 	header, err := json.Marshal(t.Header)
 	if err != nil {
 		return "", err

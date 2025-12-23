@@ -11,6 +11,8 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+
+	"github.com/loggdme/strivia/encryption"
 )
 
 // Digits represents the number of digits present in the
@@ -124,4 +126,14 @@ func (k *Key) String() string {
 // Now returns the current time in UTC.
 func Now() time.Time {
 	return time.Now().UTC()
+}
+
+// EncryptOtpSecret encrypts the given secret using the provided encryptor.
+func EncryptOtpSecret(encryptor *encryption.Encryptor, secret string) (string, error) {
+	return encryptor.Encrypt(secret)
+}
+
+// DecryptOtpSecret decrypts the given encrypted secret using the provided encryptor.
+func DecryptOtpSecret(encryptor *encryption.Encryptor, encryptedSecret string) (string, error) {
+	return encryptor.Decrypt(encryptedSecret)
 }

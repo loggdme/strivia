@@ -18,11 +18,15 @@
   },
   "cSpell.words": [
     "ABCDEFGHJKLMNPQRSTUVWXYZ",
+    "Ciphertext",
+    "Encryptor",
+    "encryptors",
     "gofmt",
     "HOTP",
     "loggd",
     "loggdme",
     "passwordvalidator",
+    "pkey",
     "pwnd",
     "stretchr",
     "strivia"
