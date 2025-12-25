@@ -25,6 +25,11 @@ var (
 	ErrTokenResponse        = errors.New("oauth: failed to parse token response")
 	ErrFetchingUser         = errors.New("oauth: error fetching user information")
 	ErrNoVerifiedEmail      = errors.New("oauth: no verified email found in user information")
+	ErrKidNotFound          = errors.New("oauth: kid not found")
+	ErrFetchingJWKS         = errors.New("oauth: error fetching JWKS")
+	ErrInvalidPublicKey     = errors.New("oauth: invalid public key")
+	ErrVerificationFailed   = errors.New("oauth: verification failed")
+	ErrInvalidNonce         = errors.New("oauth: invalid nonce")
 )
 
 // CodeChallengeMethod represents the method used for the PKCE code challenge.

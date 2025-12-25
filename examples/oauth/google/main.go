@@ -25,6 +25,6 @@ func main() {
 	fmt.Printf("\n")
 
 	tokens, _ := google.ValidateAuthorizationCode(code, codeVerifier)
-	user, _ := google.GetUserFromIdToken(*tokens.IdToken)
+	user, _ := strivia_oauth_providers.GoogleUserFromIdToken(*tokens.IdToken)
 	fmt.Printf("%+v\n\n", user)
 }
