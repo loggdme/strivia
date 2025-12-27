@@ -13,6 +13,8 @@ var (
 	// AlphanumericCharacters contains the characters used for alphanumeric OTP codes.
 	// Excluding easily misread characters (0, O, 1, I). Using uppercase only.
 	AlphanumericCharacters = []rune("23456789ABCDEFGHJKLMNPQRSTUVWXYZ")
+	// NumericCharacters contains the characters used for numeric OTP codes.
+	NumericCharacters = []rune("0123456789")
 )
 
 var (
@@ -28,6 +30,8 @@ type GenerateOptsRandomOTP struct {
 	Length int
 	// Validity specifies the duration the OTP code should be valid for. Defaults to 15 minutes.
 	Validity time.Duration
+	// Characters specifies the characters used for the OTP code. Defaults to AlphanumericCharacters.
+	Characters []rune
 }
 
 // RandomOTPCode represents an generated OTP code with its associated data.
@@ -37,8 +41,9 @@ type RandomOTPCode struct {
 }
 
 var DefaultOTPOpts = GenerateOptsRandomOTP{
-	Length:   6,
-	Validity: 15 * time.Minute,
+	Length:     6,
+	Validity:   15 * time.Minute,
+	Characters: AlphanumericCharacters,
 }
 
 // GenerateRandomOTP generates a cryptographically secure one-time password based on the provided configuration.
@@ -52,13 +57,13 @@ func GenerateRandomOTP(opts GenerateOptsRandomOTP) (*RandomOTPCode, error) {
 	}
 
 	code := make([]rune, opts.Length)
-	max := uint32(len(AlphanumericCharacters))
+	max := uint32(len(opts.Characters))
 
 	for i := range code {
 		bytes := make([]byte, 4)
 		rand.Read(bytes)
 		randomIndex := binary.BigEndian.Uint32(bytes) % max
-		code[i] = AlphanumericCharacters[randomIndex]
+		code[i] = opts.Characters[randomIndex]
 	}
 
 	return &RandomOTPCode{Code: string(code), ExpiresAt: time.Now().Add(opts.Validity)}, nil
