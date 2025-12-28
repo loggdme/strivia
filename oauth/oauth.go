@@ -45,8 +45,9 @@ const (
 // OAuth2User represents a user authenticated via an OAuth2 provider.
 // It contains basic user information such as ID, username, email, and avatar URL.
 type OAuth2User struct {
-	ID    string
-	Email string
+	ID       string
+	Username *string
+	Email    string
 }
 
 type OAuth2Tokens struct {
@@ -200,6 +201,7 @@ func SendTokenRequest[T any](req *http.Request, client *http.Client) (*T, error)
 	}
 	defer resp.Body.Close()
 
+	fmt.Println(resp.StatusCode)
 	if resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusUnauthorized {
 		return nil, ErrOauthRequest
 	}

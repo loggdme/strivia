@@ -26,6 +26,7 @@
     "loggd",
     "loggdme",
     "passwordvalidator",
+    "PKCE",
     "pkey",
     "pwnd",
     "stretchr",
