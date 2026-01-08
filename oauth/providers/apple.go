@@ -10,18 +10,18 @@ import (
 )
 
 // AppleJWKS fetches the Apple JWKS.
-func AppleJWKS() (*jwt.JWKS, error) {
-	jwks, err := jwt.FetchJWKS("https://appleid.apple.com/auth/keys")
-	if err != nil {
-		return nil, err
+func AppleJWKS(customEndpoint *string) (*jwt.JWKS, error) {
+	if customEndpoint != nil {
+		return jwt.FetchJWKS(*customEndpoint)
 	}
-	return jwks, nil
+
+	return jwt.FetchJWKS("https://appleid.apple.com/auth/keys")
 }
 
 // AppleUserFromIdTokenWithValidation extracts user information from a Apple ID token.
 // It does the same as AppleUserFromIdToken but also verifies the token signature
 // with the Google JWKS. Use this method when obtaining ID tokens from users.
-func AppleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, nonce string, audience string) (*oauth.OAuth2User, error) {
+func AppleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, nonce string, audience *string) (*oauth.OAuth2User, error) {
 	parsed, err := jwt.UnsecureDecodeToken[_AppleIdTokenClaims](idToken)
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func AppleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, nonce st
 		return nil, jwt.ErrIssuerMismatch
 	}
 
-	if len(parsed.Claims.Audience) != 1 || parsed.Claims.Audience[0] != audience {
+	if audience != nil && (len(parsed.Claims.Audience) != 1 || parsed.Claims.Audience[0] != *audience) {
 		return nil, jwt.ErrAudienceMismatch
 	}
 

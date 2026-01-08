@@ -59,18 +59,18 @@ func GoogleUserFromIdToken(idToken string) (*oauth.OAuth2User, error) {
 }
 
 // GoogleJWKS fetches the Google JWKS.
-func GoogleJWKS() (*jwt.JWKS, error) {
-	jwks, err := jwt.FetchJWKS("https://www.googleapis.com/oauth2/v3/certs")
-	if err != nil {
-		return nil, err
+func GoogleJWKS(customEndpoint *string) (*jwt.JWKS, error) {
+	if customEndpoint != nil {
+		return jwt.FetchJWKS(*customEndpoint)
 	}
-	return jwks, nil
+
+	return jwt.FetchJWKS("https://www.googleapis.com/oauth2/v3/certs")
 }
 
 // GoogleUserFromIdTokenWithValidation extracts user information from a Google ID token.
 // It does the same as GoogleUserFromIdToken but also verifies the token signature
 // with the Google JWKS. Use this method when obtaining ID tokens from users.
-func GoogleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, audience string) (*oauth.OAuth2User, error) {
+func GoogleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, audience *string) (*oauth.OAuth2User, error) {
 	parsed, err := jwt.UnsecureDecodeToken[_GoogleIdTokenClaims](idToken)
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func GoogleUserFromIdTokenWithValidation(jwks *jwt.JWKS, idToken string, audienc
 		return nil, jwt.ErrIssuerMismatch
 	}
 
-	if len(parsed.Claims.Audience) != 1 || parsed.Claims.Audience[0] != audience {
+	if audience != nil && (len(parsed.Claims.Audience) != 1 || parsed.Claims.Audience[0] != *audience) {
 		return nil, jwt.ErrAudienceMismatch
 	}
 
