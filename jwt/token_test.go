@@ -2,8 +2,6 @@ package jwt
 
 import (
 	"testing"
-
-	"github.com/stretchr/testify/assert"
 )
 
 // ====== Benchmarks ======
@@ -33,12 +31,18 @@ func TestSignedString_Success(t *testing.T) {
 	}
 
 	privateKey, err := ParseEd25519PrivateKey("MC4CAQAwBQYDK2VwBCIEIJ7VP4bGde7HFmugf7wnZ+f09S4wXiHTPqCQB/HYLw+s")
-	assert.NoError(t, err, "Failed to parse private key")
+	if err != nil {
+		t.Fatalf("Failed to parse private key: %v", err)
+	}
 
 	token := NewToken(&Claims{Email: "user@loggd.me"})
 	signed, err := token.SignedString(&privateKey)
-	assert.NoError(t, err, "SignedString failed")
+	if err != nil {
+		t.Fatalf("SignedString failed: %v", err)
+	}
 
 	expectedToken := "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6InVzZXJAbG9nZ2QubWUifQ.teoqhuOV4bNqahptstTAwWHtTqjTmHYEYR3X_7ROOQzP6t4OmtdQOIrFunwDnBdYEPS7g7U_7DDTe_xxLD2DBg"
-	assert.Equal(t, expectedToken, signed, "Signed token mismatch")
+	if signed != expectedToken {
+		t.Errorf("Signed token mismatch: expected %q, got %q", expectedToken, signed)
+	}
 }

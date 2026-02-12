@@ -1,10 +1,9 @@
 package jwt
 
 import (
+	"bytes"
 	"testing"
 	"time"
-
-	"github.com/stretchr/testify/assert"
 )
 
 func TestNumericDate_MarshalJSON(t *testing.T) {
@@ -13,8 +12,12 @@ func TestNumericDate_MarshalJSON(t *testing.T) {
 	nd := NumericDate{dt}
 	json, err := nd.MarshalJSON()
 
-	assert.NoError(t, err, "MarshalJSON should not return an error")
-	assert.Equal(t, []byte("1717245296"), json, "MarshalJSON should return the correct JSON representation")
+	if err != nil {
+		t.Fatalf("MarshalJSON should not return an error: %v", err)
+	}
+	if !bytes.Equal(json, []byte("1717245296")) {
+		t.Errorf("MarshalJSON should return the correct JSON representation: expected %q, got %q", []byte("1717245296"), json)
+	}
 }
 
 func TestNumericDate_UnmarshalJSON(t *testing.T) {
@@ -22,8 +25,12 @@ func TestNumericDate_UnmarshalJSON(t *testing.T) {
 
 	var nd NumericDate
 	err := nd.UnmarshalJSON(input)
-	assert.NoError(t, err, "UnmarshalJSON should not return an error")
+	if err != nil {
+		t.Fatalf("UnmarshalJSON should not return an error: %v", err)
+	}
 
 	expected := time.Unix(1717245296, 0).Truncate(time.Second)
-	assert.Equal(t, expected, nd.Time, "UnmarshalJSON should set the correct time")
+	if !nd.Time.Equal(expected) {
+		t.Errorf("UnmarshalJSON should set the correct time: expected %v, got %v", expected, nd.Time)
+	}
 }

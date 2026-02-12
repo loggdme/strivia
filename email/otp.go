@@ -56,6 +56,10 @@ func GenerateRandomOTP(opts GenerateOptsRandomOTP) (*RandomOTPCode, error) {
 		opts.Validity = 15 * time.Minute
 	}
 
+	if len(opts.Characters) == 0 {
+		opts.Characters = AlphanumericCharacters
+	}
+
 	code := make([]rune, opts.Length)
 	max := uint32(len(opts.Characters))
 
